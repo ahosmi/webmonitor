@@ -1,7 +1,5 @@
 # WebMonitor 🖥️
 
-**AI-Powered Website Analyzer for UX, Performance & Accessibility**
-
 
 WebMonitor is a full-stack application that uses AI to evaluate website screenshots or URLs and generate detailed feedback on design, usability, accessibility, and SEO. Built with React, TailwindCSS, Node.js, Cloudinary, and Replicate AI.
 
