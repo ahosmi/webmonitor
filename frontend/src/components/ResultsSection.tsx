@@ -72,9 +72,13 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ isLoading = fals
           <CardContent>
             <div className="p-4 bg-slate-50 rounded-lg">
               <p className="text-base text-slate-800 leading-relaxed">
-                {typeof results === 'string'
-                  ? results
-                  : results?.feedback || 'No feedback received.'}
+                <pre className="text-sm text-slate-800 whitespace-pre-wrap">
+                  {typeof results === 'string'
+                    ? results
+                    : typeof results === 'object'
+                    ? JSON.stringify(results, null, 2)
+                    : 'No feedback received.'}
+                </pre>
               </p>
             </div>
           </CardContent>

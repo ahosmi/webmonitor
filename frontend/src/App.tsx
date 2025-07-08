@@ -15,7 +15,7 @@ function App() {
   const [hasError, setHasError] = React.useState(false);
   const [errorType, setErrorType] = React.useState<'repair' | 'connection'>('connection');
   const [attemptCount, setAttemptCount] = React.useState(0);
-  const [analysisResults, setAnalysisResults] = React.useState(null);
+  const [analysisResults, setAnalysisResults] = React.useState<any>(null);
 
   const handleGetStarted = () => {
     const aboutSection = document.getElementById('about');
@@ -29,29 +29,51 @@ function App() {
     setShowResults(false);
     setHasError(false);
     setAnalysisResults(null);
-    
+
     try {
-      // Since there's no backend yet, we'll immediately show the connection error
-      // This simulates the inability to connect to Replicate API
-      throw new Error('No backend API available');
-      
+      let response;
+
+      if (file) {
+        const formData = new FormData();
+        formData.append('screenshot', file);
+
+        response = await fetch('http://localhost:5000/api/screenshot', {
+          method: 'POST',
+          body: formData,
+        });
+      } else if (url) {
+        response = await fetch('http://localhost:5000/api/url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+      } else {
+        throw new Error('No input provided');
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch from backend');
+      }
+
+      const data = await response.json();
+      setAnalysisResults(data.feedback || data);
+      setShowResults(true);
     } catch (error) {
+      console.error(error);
       const newAttemptCount = attemptCount + 1;
       setAttemptCount(newAttemptCount);
-      
-      // Show connection error since we can't reach the API
       setErrorType('connection');
       setHasError(true);
+    } finally {
       setIsAnalyzing(false);
     }
   };
 
   const handleRetry = () => {
     setHasError(false);
-    handleAnalyze();
+    setShowResults(false);
   };
 
-  // Handle scroll to update active section
   React.useEffect(() => {
     const handleScroll = () => {
       const sections = ['home', 'about', 'how-it-works', 'input-section'];
@@ -81,27 +103,27 @@ function App() {
       <Hero onGetStarted={handleGetStarted} />
       <AboutSection />
       <HowItWorksSection />
-      
+
       <div id="input-section">
         <InputSection onAnalyze={handleAnalyze} />
       </div>
-      
+
       {isAnalyzing && !hasError && (
         <ResultsSection isLoading={isAnalyzing} />
       )}
-      
+
       {showResults && analysisResults && !hasError && (
         <ResultsSection results={analysisResults} />
       )}
-      
+
       {hasError && (
-        <ErrorSection 
-          errorType={errorType} 
+        <ErrorSection
+          errorType={errorType}
           attemptCount={attemptCount}
           onRetry={handleRetry}
         />
       )}
-      
+
       <Footer />
     </div>
   );
